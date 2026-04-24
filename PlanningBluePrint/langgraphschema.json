@@ -1,0 +1,214 @@
+{
+    "nodes": [
+        {
+            "id": "input",
+            "type": "UserInput"
+        },
+        {
+            "id": "planning",
+            "type": "PlanningNode",
+            "output": "planning.md"
+        },
+        {
+            "id": "approval",
+            "type": "HumanApprovalNode"
+        },
+        {
+            "id": "model",
+            "type": "ModelNode",
+            "providers": [
+                "api",
+                "local_slm"
+            ]
+        },
+        {
+            "id": "validation",
+            "type": "ValidationNode"
+        },
+        {
+            "id": "websearch",
+            "type": "WebSearchNode"
+        },
+        {
+            "id": "plugin",
+            "type": "PluginNode"
+        },
+        {
+            "id": "tester",
+            "type": "TesterNode",
+            "frameworks": [
+                "pytest",
+                "xUnit",
+                "Jest"
+            ]
+        },
+        {
+            "id": "memory",
+            "type": "MemoryNode"
+        },
+        {
+            "id": "codegraph",
+            "type": "CodeGraphNode",
+            "folder": "agent-graphs"
+        },
+        {
+            "id": "dataflow",
+            "type": "DataFlowGraphNode",
+            "folder": "agent-graphs"
+        },
+        {
+            "id": "lifecycle",
+            "type": "LifecycleNode",
+            "actions": [
+                "generate",
+                "enhance",
+                "fix",
+                "add",
+                "debug",
+                "run",
+                "delete"
+            ]
+        },
+        {
+            "id": "db",
+            "type": "DBNode",
+            "capabilities": [
+                "schema",
+                "migrations",
+                "orm",
+                "queries"
+            ]
+        },
+        {
+            "id": "git",
+            "type": "GitNode",
+            "actions": [
+                "commit",
+                "pr",
+                "semantic"
+            ]
+        },
+        {
+            "id": "cicd",
+            "type": "CICDNode",
+            "actions": [
+                "pipeline",
+                "deploy"
+            ]
+        },
+        {
+            "id": "design",
+            "type": "DesignPatternNode",
+            "patterns": [
+                "MVC",
+                "Repository",
+                "Factory",
+                "Observer",
+                "Singleton"
+            ]
+        },
+        {
+            "id": "security",
+            "type": "SecurityNode",
+            "checks": [
+                "lint",
+                "static_analysis",
+                "vulnerability_scan"
+            ]
+        },
+        {
+            "id": "output",
+            "type": "OutputNode"
+        }
+    ],
+    "edges": [
+        [
+            "input",
+            "planning"
+        ],
+        [
+            "planning",
+            "approval"
+        ],
+        [
+            "approval",
+            "model"
+        ],
+        [
+            "model",
+            "validation"
+        ],
+        [
+            "validation",
+            "websearch"
+        ],
+        [
+            "model",
+            "plugin"
+        ],
+        [
+            "model",
+            "design"
+        ],
+        [
+            "model",
+            "lifecycle"
+        ],
+        [
+            "lifecycle",
+            "tester"
+        ],
+        [
+            "lifecycle",
+            "db"
+        ],
+        [
+            "lifecycle",
+            "codegraph"
+        ],
+        [
+            "lifecycle",
+            "dataflow"
+        ],
+        [
+            "tester",
+            "lifecycle"
+        ],
+        [
+            "db",
+            "tester"
+        ],
+        [
+            "lifecycle",
+            "git"
+        ],
+        [
+            "git",
+            "cicd"
+        ],
+        [
+            "tester",
+            "cicd"
+        ],
+        [
+            "security",
+            "cicd"
+        ],
+        [
+            "cicd",
+            "output"
+        ],
+        [
+            "memory",
+            "output"
+        ],
+        [
+            "codegraph",
+            "planning"
+        ],
+        [
+            "dataflow",
+            "planning"
+        ]
+    ]
+}
