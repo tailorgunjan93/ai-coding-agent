@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -68,7 +68,7 @@ jobs:
           command: test
 
   deploy:
-    needs: [build, lint, test, security]
+    needs: [ build, lint, test, security ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:

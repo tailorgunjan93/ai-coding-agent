@@ -1,0 +1,60 @@
+stages:
+  - build
+  - lint
+  - test
+  - security
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+lint:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - npm install
+    - npm run lint
+
+test:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm install
+    - npm run test:unit
+    - npm run test:integration
+    - npm run test:edge
+  artifacts:
+    paths:
+      - coverage/
+
+security:
+  stage: security
+  image: node:${NODE_VERSION}
+  script:
+    - npm install -g snyk
+    - snyk test
+  allow_failure: false
+
+deploy:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  script:
+    - npm install -g vsce
+    - vsce publish
+  only:
+    - main
+  dependencies:
+    - build
+    - lint
+    - test
+    - security
