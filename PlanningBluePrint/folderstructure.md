@@ -1,7 +1,7 @@
 📦 ai-coding-agent/
 │
 ├── 📄 README.md
-│   └─ Overview, setup instructions, architecture diagram, and usage examples.
+│   └─ Overview, setup instructions, architecture diagram, usage examples.
 │
 ├── 📄 planning.md
 │   └─ Auto-generated plan for each new app or enhancement (human-approved).
@@ -9,7 +9,7 @@
 ├── 📁 src/
 │   ├── main/
 │   │   ├── agent/
-│   │   │   ├── nodes/
+│   │   │   ├── nodes/                  → Atomic node implementations
 │   │   │   │   ├── planning_node.py
 │   │   │   │   ├── human_approval_node.py
 │   │   │   │   ├── model_node.py
@@ -21,7 +21,23 @@
 │   │   │   │   ├── design_pattern_node.py
 │   │   │   │   ├── security_node.py
 │   │   │   │   └── output_node.py
-│   │   ├── utils/
+│   │   │   ├── interfaces/             → Abstract contracts
+│   │   │   │   ├── node_interface.py
+│   │   │   │   ├── repo_interface.py
+│   │   │   │   └── db_interface.py
+│   │   │   ├── models/                 → Pydantic schemas
+│   │   │   │   ├── agent_state.py
+│   │   │   │   ├── test_result.py
+│   │   │   │   └── plan_schema.py
+│   │   │   ├── wrappers/               → Library abstraction
+│   │   │   │   ├── prompt_wrapper.py
+│   │   │   │   ├── llm_wrapper.py
+│   │   │   │   ├── db_wrapper.py
+│   │   │   │   ├── git_wrapper.py
+│   │   │   │   └── cicd_wrapper.py
+│   │   │   ├── agent.py                → LangGraph workflow definition
+│   │   │   └── graph_builder.py        → Builds graph dynamically
+│   │   ├── utils/                      → Helper utilities
 │   │   │   ├── code_commenter.py
 │   │   │   ├── design_pattern_enforcer.py
 │   │   │   ├── db_handler.py
@@ -30,7 +46,7 @@
 │   │   │   └── test_runner.py
 │   │   └── langgraph_schema.json
 │   │
-│   └── extension/
+│   └── extension/                      → VS Code extension layer
 │       ├── commands/
 │       ├── ui/
 │       └── manifest.json
