@@ -8,7 +8,6 @@ with tasks, dependencies, risks, and technology choices.
 from typing import Any
 
 from src.main.agent.nodes.base_node import BaseNode
-from src.main.agent.interfaces.node_interface import NodeExecutionContext
 from src.main.agent.models.agent_state import AgentState
 from src.main.agent.models.plan_schema import PlanSchema
 
@@ -68,30 +67,15 @@ class PlanningNode(BaseNode):
     def get_required_dependencies(self) -> list[str]:
         return ["input"]
 
-    async def _execute(
-        self,
-        state: dict,
-        context: NodeExecutionContext,
-    ) -> dict[str, Any]:
+    def run(self, state: AgentState) -> AgentState:
         """
         Generate a structured plan from the user's request.
-
-        Steps:
-        1. Render planning prompt with request context
-        2. Call LLM to generate plan
-        3. Parse and validate plan structure
-        4. Write planning.md file
-        5. Update state with plan tasks
-
-        Args:
-            state: Current workflow state.
-            context: Execution context.
-
-        Returns:
-            Dict with plan, tasks, and output path.
+        
+        TODO: Implement planning logic here.
+        Input: AgentState.plan
+        Output: Updated AgentState with plan details.
         """
-        # TODO: Implement planning logic
-        raise NotImplementedError(
-            "PlanningNode._execute() not yet implemented. "
-            "See LLD.md for implementation guidance."
-        )
+        # Call LLM wrapper to generate code from plan.
+        # This is where juniors would add their code.
+        return state
+

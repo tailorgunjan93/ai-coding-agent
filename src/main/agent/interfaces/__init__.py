@@ -27,6 +27,23 @@ from src.main.agent.interfaces.repo_interface import (
     BranchInfo,
     RepoStatus,
 )
+from src.main.agent.interfaces.git_interface import (
+    GitInterface,
+    GitProvider,
+    GitAuthConfig,
+    GitCloneConfig,
+    GitCommitInfo,
+    GitBranchInfo,
+    GitRemoteInfo,
+    GitStatusInfo,
+)
+from src.main.agent.interfaces.cicd_interface import (
+    CICDInterface,
+    CICDProvider,
+    PipelineConfig,
+    PipelineRun,
+    JobInfo,
+)
 
 __all__ = [
     "LLMInterface",
@@ -48,4 +65,17 @@ __all__ = [
     "PRInfo",
     "BranchInfo",
     "RepoStatus",
+    "GitInterface",
+    "GitProvider",
+    "GitAuthConfig",
+    "GitCloneConfig",
+    "GitCommitInfo",
+    "GitBranchInfo",
+    "GitRemoteInfo",
+    "GitStatusInfo",
+    "CICDInterface",
+    "CICDProvider",
+    "PipelineConfig",
+    "PipelineRun",
+    "JobInfo",
 ]

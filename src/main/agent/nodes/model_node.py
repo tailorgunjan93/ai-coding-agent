@@ -8,7 +8,6 @@ with context from the codebase and planning documents.
 from typing import Any
 
 from src.main.agent.nodes.base_node import BaseNode
-from src.main.agent.interfaces.node_interface import NodeExecutionContext
 from src.main.agent.models.agent_state import AgentState
 
 
@@ -68,30 +67,14 @@ class ModelNode(BaseNode):
     def get_required_dependencies(self) -> list[str]:
         return ["planning", "human_approval"]
 
-    async def _execute(
-        self,
-        state: dict,
-        context: NodeExecutionContext,
-    ) -> dict[str, Any]:
+    def run(self, state: AgentState) -> AgentState:
         """
-        Generate code from the approved plan.
-
-        Steps:
-        1. Read plan and tasks from state
-        2. For each task, render code generation prompt
-        3. Call LLM to generate code
-        4. Write code files to output directory
-        5. Return generated file list
-
-        Args:
-            state: Current workflow state.
-            context: Execution context.
-
-        Returns:
-            Dict with generated files and metadata.
+        Generate code from the current plan.
+        
+        TODO: Call LLM wrapper to generate code from plan.
+        Input: AgentState.plan
+        Output: AgentState.code
         """
-        # TODO: Implement code generation logic
-        raise NotImplementedError(
-            "ModelNode._execute() not yet implemented. "
-            "See LLD.md for implementation guidance."
-        )
+        # Call LLM wrapper to generate code from plan.
+        # This is where juniors would add their code.
+        return state

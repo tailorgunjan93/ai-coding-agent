@@ -1,0 +1,25 @@
+from src.main.agent.interfaces.node_interface import NodeInterface
+from src.main.agent.models.agent_state import AgentState
+
+class RunModelNode(NodeInterface):
+    """
+    TODO: Implement the model node to generate code from a plan.
+    One-line instruction: Call LLM wrapper to generate code from plan.
+    """
+
+    def run(self, state: AgentState) -> AgentState:
+        """
+        TODO: Implement node logic here.
+        Input: AgentState.plan
+        Output: Updated AgentState with 'code' field.
+        """
+        # 1. Access input from state
+        # plan = state.get("plan")
+        
+        # 2. Call wrapper (injected via constructor)
+        # result = self.llm_wrapper.generate(plan)
+        
+        # 3. Update state
+        # state["code"] = result
+        
+        return state
