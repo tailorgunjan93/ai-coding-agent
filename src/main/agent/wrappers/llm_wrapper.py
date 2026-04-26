@@ -5,10 +5,16 @@ This wrapper uses composition (not inheritance) to add orthogonal concerns
 to any LLMInterface implementation without modifying it.
 """
 
-from typing import Any, AsyncIterator
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 from datetime import datetime, timedelta
 import hashlib
 import asyncio
+import logging
+
+from langchain_core.language_models import BaseLanguageModel
+from langchain_core.callbacks import CallbackManagerForLLMRun
+from langchain_core.outputs import LLMResult, Generation
+from langchain_core.prompts import BasePromptTemplate
 
 from src.main.agent.interfaces.llm_interface import (
     LLMInterface,
@@ -17,6 +23,8 @@ from src.main.agent.interfaces.llm_interface import (
     LLMResponse,
 )
 from src.main.agent.exceptions import RateLimitError, LLMError
+
+logger = logging.getLogger(__name__)
 
 
 class CacheEntry:
@@ -38,6 +46,7 @@ class LLMWrapper:
     - Caching: Avoid duplicate LLM calls for identical prompts
     - Rate limiting: Prevent exceeding provider limits
     - Fallback: Seamlessly switch to backup provider on failure
+    - LangChain integration: Wrap LangChain LLMs for seamless usage
 
     Usage:
         llm = OpenAIAdapter(api_key="...")
@@ -52,6 +61,7 @@ class LLMWrapper:
         cache_ttl_seconds: int = 300,
         rate_limit_rpm: int = 60,
         rate_limit_window_seconds: int = 60,
+        enable_langchain_integration: bool = True,
     ):
         """
         Initialize the LLM wrapper.
@@ -62,6 +72,7 @@ class LLMWrapper:
             cache_ttl_seconds: How long to cache responses (default 5 min).
             rate_limit_rpm: Max requests per minute (default 60).
             rate_limit_window_seconds: Rate limit window (default 60s).
+            enable_langchain_integration: Enable LangChain LLM wrapping.
         """
         self._primary = primary
         self._fallback = fallback
@@ -70,6 +81,63 @@ class LLMWrapper:
         self._rate_limit_rpm = rate_limit_rpm
         self._rate_limit_window = timedelta(seconds=rate_limit_window_seconds)
         self._request_timestamps: list[datetime] = []
+        self._enable_langchain_integration = enable_langchain_integration
+        self._langchain_llm: Optional[BaseLanguageModel] = None
+        
+        if enable_langchain_integration:
+            self._setup_langchain_integration()
+
+    def _setup_langchain_integration(self) -> None:
+        """Setup LangChain integration by creating a LangChain-compatible LLM."""
+        try:
+            # Create a LangChain LLM that delegates to our LLMInterface
+            from langchain_core.language_models.llms import LLM
+            from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+            from langchain_core.outputs import Generation
+            
+            class LangChainAdapter(LLM):
+                """Adapter to make LLMInterface compatible with LangChain."""
+                
+                llm_interface: LLMInterface
+                
+                @property
+                def _llm_type(self) -> str:
+                    return f"ai-coding-agent-{self.llm_interface.get_provider().value}"
+                
+                def _call(
+                    self,
+                    prompt: str,
+                    stop: Optional[List[str]] = None,
+                    run_manager: Optional[CallbackManagerForLLMRun] = None,
+                    **kwargs: Any,
+                ) -> str:
+                    # This is a sync call - in practice, we'd need to handle async properly
+                    # For now, we'll raise NotImplementedError and rely on async methods
+                    raise NotImplementedError("Use async methods instead")
+                
+                async def _acall(
+                    self,
+                    prompt: str,
+                    stop: Optional[List[str]] = None,
+                    run_manager: Optional[CallbackManagerForLLMRun] = None,
+                    **kwargs: Any,
+                ) -> str:
+                    """Async call to the LLM interface."""
+                    settings = GenerationSettings(
+                        temperature=kwargs.get("temperature", 0.7),
+                        max_tokens=kwargs.get("max_tokens"),
+                        top_p=kwargs.get("top_p"),
+                        stop_sequences=stop,
+                    )
+                    
+                    response = await self.llm_interface.generate(prompt, settings)
+                    return response["content"]
+            
+            self._langchain_llm = LangChainAdapter(llm_interface=self._primary)
+            logger.info("LangChain integration enabled")
+        except ImportError:
+            logger.warning("LangChain not available, skipping LangChain integration")
+            self._enable_langchain_integration = False
 
     async def generate(
         self,
@@ -204,6 +272,17 @@ class LLMWrapper:
         """Delegate to primary LLM."""
         return self._primary.get_provider()
 
+    def get_langchain_llm(self) -> Optional[BaseLanguageModel]:
+        """
+        Get the LangChain-compatible LLM if integration is enabled.
+        
+        Returns:
+            LangChain LLM instance or None if integration disabled.
+        """
+        if self._enable_langchain_integration:
+            return self._langchain_llm
+        return None
+
     def get_metrics(self) -> dict[str, Any]:
         """Get wrapper metrics for monitoring."""
         return {
@@ -217,6 +296,7 @@ class LLMWrapper:
                 self._fallback.get_provider().value if self._fallback else None
             ),
             "rate_limit_rpm": self._rate_limit_rpm,
+            "langchain_integration_enabled": self._enable_langchain_integration,
         }
 
     def clear_cache(self) -> None:
