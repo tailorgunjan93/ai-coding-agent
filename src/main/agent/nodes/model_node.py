@@ -67,14 +67,19 @@ class ModelNode(BaseNode):
     def get_required_dependencies(self) -> list[str]:
         return ["planning", "human_approval"]
 
-    def run(self, state: AgentState) -> AgentState:
+    async def run(self, state: AgentState) -> AgentState:
         """
         Generate code from the current plan.
-        
-        TODO: Call LLM wrapper to generate code from plan.
-        Input: AgentState.plan
-        Output: AgentState.code
         """
-        # Call LLM wrapper to generate code from plan.
-        # This is where juniors would add their code.
+        prompt = f"Generate code for the following plan: {state['plan']}"
+        response = await self._llm.generate(prompt)
+        
+        # Add to artifacts
+        state["artifacts"].append({
+            "type": "file",
+            "path": "generated_code.py",
+            "content": response["content"],
+            "created_at": "now"
+        })
         return state
+

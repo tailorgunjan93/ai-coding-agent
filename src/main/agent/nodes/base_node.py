@@ -25,7 +25,7 @@ class BaseNode(NodeInterface, ABC):
         pass
 
     @abstractmethod
-    def run(self, state: AgentState) -> AgentState:
+    async def run(self, state: AgentState) -> AgentState:
         """
         Main execution logic.
         Juniors should implement this method.

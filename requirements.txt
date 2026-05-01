@@ -1,0 +1,42 @@
+# ============================================
+# AI Coding Agent - Python Dependencies
+# ============================================
+# Install: pip install -r requirements.txt
+# ============================================
+
+# --- Core Framework ---
+langchain>=0.3.0
+langchain-core>=0.3.0
+langgraph>=0.2.0
+pydantic>=2.0.0
+
+# --- LLM Providers (Cloud - Paid) ---
+langchain-openai>=0.2.0          # OpenAI GPT-4 (requires OPENAI_API_KEY)
+langchain-anthropic>=0.2.0       # Anthropic Claude (requires ANTHROPIC_API_KEY)
+
+# --- LLM Providers (Cloud - Free Tier) ---
+langchain-groq>=0.2.0            # Groq LPU inference (free: 30 req/min, requires GROQ_API_KEY)
+langchain-google-genai>=2.0.0    # Google Gemini (free: 15 req/min, requires GOOGLE_API_KEY)
+
+# --- LLM Providers (Enterprise) ---
+langchain-aws>=0.2.0             # AWS Bedrock (requires AWS credentials)
+
+# --- LLM Providers (Local - Fully Free) ---
+langchain-ollama>=0.2.0          # Ollama local models (requires: ollama serve)
+
+# --- HTTP & Networking ---
+httpx>=0.27.0                    # Ollama server health checks & API calls
+
+# --- Git Integration ---
+gitpython>=3.1.0                 # Git operations (clone, commit, push, PR)
+
+# --- Testing ---
+pytest>=8.0.0
+pytest-asyncio>=0.24.0           # Async test support
+pytest-timeout>=2.3.0            # Test timeout support
+
+# --- Code Quality ---
+black>=24.0.0                    # Code formatting
+mypy>=1.10.0                     # Type checking
+flake8>=7.0.0                    # Linting
+pre-commit>=3.7.0                # Git pre-commit hooks

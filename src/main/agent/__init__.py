@@ -1,7 +1,8 @@
 """AI Coding Agent framework."""
 
-from src.main.agent.agent import Agent, run_agent, get_default_agent
-from src.main.agent.graph_builder import GraphBuilder, build_agent_graph
+__version__ = "0.1.0"
+
+# Lazy loading or just exposing exceptions which have no dependencies
 from src.main.agent.exceptions import (
     AgentException,
     ConfigurationError,
@@ -18,15 +19,7 @@ from src.main.agent.exceptions import (
     PromptError,
 )
 
-__version__ = "0.1.0"
-
 __all__ = [
-    # Core
-    "Agent",
-    "run_agent",
-    "get_default_agent",
-    "GraphBuilder",
-    "build_agent_graph",
     # Exceptions
     "AgentException",
     "ConfigurationError",
@@ -42,3 +35,4 @@ __all__ = [
     "QueryError",
     "PromptError",
 ]
+

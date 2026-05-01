@@ -67,15 +67,15 @@ class PlanningNode(BaseNode):
     def get_required_dependencies(self) -> list[str]:
         return ["input"]
 
-    def run(self, state: AgentState) -> AgentState:
+    async def run(self, state: AgentState) -> AgentState:
         """
         Generate a structured plan from the user's request.
-        
-        TODO: Implement planning logic here.
-        Input: AgentState.plan
-        Output: Updated AgentState with plan details.
         """
-        # Call LLM wrapper to generate code from plan.
-        # This is where juniors would add their code.
+        prompt = f"Create a project plan for: {state['original_request']}"
+        response = await self._llm.generate(prompt)
+        
+        state["plan"] = response["content"]
+        state["updated_at"] = "now" # In real app use datetime
         return state
+
 

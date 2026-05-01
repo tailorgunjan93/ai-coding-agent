@@ -1,11 +1,4 @@
-"""
-Plan Schema - Pydantic models for planning output.
-
-These models define the structure of planning documents produced
-by the PlanningNode and consumed by other nodes.
-"""
-
-from typing import NotRequired
+from typing import Any, Optional
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from enum import Enum
@@ -33,15 +26,15 @@ class PlanTask(BaseModel):
     id: str = Field(..., description="Unique task identifier")
     description: str = Field(..., description="Human-readable task description")
     priority: int = Field(default=5, ge=0, le=10, description="Priority 0-10")
-    estimated_hours: NotRequired[float] = Field(default=None, ge=0)
-    actual_hours: NotRequired[float] = Field(default=None, ge=0)
+    estimated_hours: Optional[float] = Field(default=None, ge=0)
+    actual_hours: Optional[float] = Field(default=None, ge=0)
     depends_on: list[str] = Field(default_factory=list, description="Task IDs this depends on")
     skills_required: list[str] = Field(default_factory=list)
     status: TaskStatus = Field(default=TaskStatus.PENDING)
-    assignee: NotRequired[str]
-    created_at: NotRequired[datetime]
-    completed_at: NotRequired[datetime]
-    error: NotRequired[str]
+    assignee: Optional[str] = None
+    created_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    error: Optional[str] = None
 
     @field_validator("id")
     @classmethod
@@ -76,14 +69,14 @@ class PlanRisk(BaseModel):
     likelihood: RiskLikelihood
     impact: RiskImpact
     mitigation: str = Field(..., description="Mitigation strategy")
-    contingency: NotRequired[str] = Field(default=None, description="Contingency plan")
-    owner: NotRequired[str]
+    contingency: Optional[str] = Field(default=None, description="Contingency plan")
+    owner: Optional[str] = None
 
 
 class Technology(BaseModel):
     """A technology in the tech stack."""
     name: str = Field(..., description="Technology name")
-    version: NotRequired[str] = Field(default=None, description="Version constraint")
+    version: Optional[str] = Field(default=None, description="Version constraint")
     purpose: str = Field(..., description="Why this technology is chosen")
 
 
@@ -98,9 +91,9 @@ class ApprovalInfo(BaseModel):
     """Human approval information."""
     required: bool = Field(default=True, description="Whether approval is required")
     status: str = Field(default="pending", description="pending, approved, rejected")
-    approved_by: NotRequired[str]
-    approved_at: NotRequired[datetime]
-    comments: NotRequired[str]
+    approved_by: Optional[str] = None
+    approved_at: Optional[datetime] = None
+    comments: Optional[str] = None
 
 
 class PlanSchema(BaseModel):
@@ -132,14 +125,14 @@ class PlanSchema(BaseModel):
     human_approval: ApprovalInfo = Field(default_factory=ApprovalInfo)
 
     # Output paths
-    planning_md_path: NotRequired[str] = Field(default=None, description="Path to planning.md")
-    code_graph_path: NotRequired[str] = Field(default=None, description="Path to code_graph.json")
-    data_flow_path: NotRequired[str] = Field(default=None, description="Path to data_flow.json")
+    planning_md_path: Optional[str] = Field(default=None, description="Path to planning.md")
+    code_graph_path: Optional[str] = Field(default=None, description="Path to code_graph.json")
+    data_flow_path: Optional[str] = Field(default=None, description="Path to data_flow.json")
 
     # Metadata
     metadata: dict[str, str] = Field(default_factory=dict)
 
-    def get_task_by_id(self, task_id: str) -> PlanTask | None:
+    def get_task_by_id(self, task_id: str) -> Optional[PlanTask]:
         """Find a task by its ID."""
         for task in self.tasks:
             if task.id == task_id:
@@ -181,3 +174,4 @@ class PlanSchema(BaseModel):
             remaining.difference_update(completed)
 
         return sorted_tasks
+
