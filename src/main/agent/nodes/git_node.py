@@ -1,49 +1,39 @@
 """
-Git Node - Handles version control operations.
+Git Node - Generates git operation commands.
 
-This node manages git operations including committing changes,
-creating branches, and managing pull requests.
+Produces git commands for version control operations
+based on generated code artifacts.
 """
 
 from typing import Any
+import logging
 
 from src.main.agent.nodes.base_node import BaseNode
-from src.main.agent.interfaces.node_interface import NodeExecutionContext
-from src.main.agent.interfaces.repo_interface import RepoWrapper
 from src.main.agent.models.agent_state import AgentState
+
+logger = logging.getLogger(__name__)
 
 
 class GitNode(BaseNode):
     """
-    Node responsible for version control operations.
+    Node responsible for git command generation.
 
-    This node:
-    - Creates commits with semantic messages
-    - Manages branches for features
-    - Creates and manages pull requests
-    - Handles merge conflicts
-    - Tags releases
+    Generates commands for:
+    - Branch creation
+    - Staging and committing changes
+    - Pushing to remote
+    - Creating pull requests
 
     Dependencies:
         - model (needs code to commit)
-        - tester (needs tests to pass)
-        - security (needs security to pass)
     """
 
     def __init__(
         self,
-        repo_wrapper: RepoWrapper | None = None,
+        repo_wrapper: Any | None = None,
         default_branch: str = "main",
         max_retries: int = 2,
     ):
-        """
-        Initialize the git node.
-
-        Args:
-            repo_wrapper: Optional RepoWrapper for git access.
-            default_branch: Default branch name.
-            max_retries: Max retries for git operations.
-        """
         super().__init__(max_retries=max_retries, timeout_seconds=60)
         self._repo = repo_wrapper
         self._default_branch = default_branch
@@ -54,16 +44,7 @@ class GitNode(BaseNode):
 
     @property
     def description(self) -> str:
-        return "Handles version control operations"
-
-    @property
-    def input_schema(self) -> type:
-        return AgentState
-
-    @property
-    def output_schema(self) -> type:
-        # Returns dict with commit info
-        return dict
+        return "Generates git operation commands"
 
     def get_required_dependencies(self) -> list[str]:
         return ["model"]
@@ -71,30 +52,100 @@ class GitNode(BaseNode):
     def get_optional_dependencies(self) -> list[str]:
         return ["tester", "security"]
 
-    async def _execute(
-        self,
-        state: dict,
-        context: NodeExecutionContext,
-    ) -> dict[str, Any]:
+    async def run(self, state: AgentState) -> AgentState:
         """
-        Execute git operations.
+        Generate git commands for the workflow output.
 
         Steps:
-        1. Get changes from model output
-        2. Create feature branch if needed
-        3. Stage and commit changes
-        4. Create PR if applicable
-        5. Return commit/PR info
-
-        Args:
-            state: Current workflow state.
-            context: Execution context.
-
-        Returns:
-            Dict with commit and PR information.
+        1. Determine branch name from request
+        2. Collect changed file paths from artifacts
+        3. Generate semantic commit message
+        4. Produce git command sequence
         """
-        # TODO: Implement git operations logic
-        raise NotImplementedError(
-            "GitNode._execute() not yet implemented. "
-            "See LLD.md for implementation guidance."
+        artifacts = state.get("artifacts", [])
+        file_paths = [a["path"] for a in artifacts if a.get("type") == "file"]
+
+        if not file_paths:
+            state["git_commands"] = {
+                "status": "skipped",
+                "reason": "No files to commit",
+                "commands": [],
+            }
+            return state
+
+        # Generate branch name from request
+        request = state.get("original_request", "feature")
+        branch_name = self._generate_branch_name(request)
+
+        # Generate commit message
+        commit_msg = self._generate_commit_message(request, file_paths)
+
+        # Build git command sequence
+        commands = [
+            {
+                "step": 1,
+                "command": f"git checkout -b {branch_name}",
+                "description": f"Create and switch to feature branch",
+            },
+            {
+                "step": 2,
+                "command": f"git add {' '.join(file_paths)}",
+                "description": f"Stage {len(file_paths)} generated files",
+            },
+            {
+                "step": 3,
+                "command": f'git commit -m "{commit_msg}"',
+                "description": "Commit with semantic message",
+            },
+            {
+                "step": 4,
+                "command": f"git push origin {branch_name}",
+                "description": "Push to remote",
+            },
+            {
+                "step": 5,
+                "command": f'gh pr create --title "{commit_msg}" --body "Auto-generated by AI Coding Agent" --base {self._default_branch}',
+                "description": "Create pull request (requires GitHub CLI)",
+            },
+        ]
+
+        state["git_commands"] = {
+            "status": "generated",
+            "branch": branch_name,
+            "commit_message": commit_msg,
+            "files": file_paths,
+            "commands": commands,
+        }
+
+        logger.info(f"Generated {len(commands)} git commands for branch '{branch_name}'")
+        return state
+
+    def _generate_branch_name(self, request: str) -> str:
+        """Generate a git branch name from the request."""
+        # Clean and truncate
+        words = request.lower().split()[:5]
+        clean = "-".join(
+            "".join(c for c in w if c.isalnum()) for w in words if w
         )
+        return f"feature/{clean[:50]}"
+
+    def _generate_commit_message(self, request: str, files: list[str]) -> str:
+        """Generate a semantic commit message."""
+        # Determine conventional commit type
+        request_lower = request.lower()
+        if any(w in request_lower for w in ["fix", "bug", "repair", "patch"]):
+            prefix = "fix"
+        elif any(w in request_lower for w in ["add", "create", "new", "implement"]):
+            prefix = "feat"
+        elif any(w in request_lower for w in ["refactor", "clean", "restructure"]):
+            prefix = "refactor"
+        elif any(w in request_lower for w in ["test", "spec"]):
+            prefix = "test"
+        elif any(w in request_lower for w in ["doc", "readme", "comment"]):
+            prefix = "docs"
+        else:
+            prefix = "feat"
+
+        # Truncate request for message
+        summary = request[:72].strip()
+        return f"{prefix}: {summary}"
